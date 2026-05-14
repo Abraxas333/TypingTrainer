@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char input[50];
+    printf("Eingabe: ");
+
+    /* fgets(buffer, max_size, stream)
+     * Liest maximal (max_size - 1) Zeichen aus dem Stream (stdin = Konsole).
+     * Speichert '\n' mit ab, wenn der User Enter drückt und noch Platz ist!
+     * Return: pointer auf buffer bei Erfolg, NULL bei EOF/Fehler. */
+    if (fgets(input, sizeof(input), stdin) != NULL) {
+        
+        /* strcspn(string, reject_chars)
+         * Ermittelt die Länge des Strings VOR dem ersten Auftreten eines 
+         * Zeichens aus reject_chars. Perfekt, um das '\n' zu finden und 
+         * durch ein Null-Byte '\0' zu überschreiben. */
+        input[strcspn(input, "\n")] = '\0';
+
+        // Puffer leeren, falls die Eingabe länger war als das Array fasst
+        // (verhindert, dass Reste in das nächste fgets rutschen)
+        if (strlen(input) == sizeof(input) - 1) {
+            int c;
+            /* getchar() holt ein einzelnes Zeichen aus dem stdin-Puffer */
+            while ((c = getchar()) != '\n' && c != EOF); 
+        }
+
+        printf("Du hast getippt: %s\n", input);
+    }
+    return 0;
+}

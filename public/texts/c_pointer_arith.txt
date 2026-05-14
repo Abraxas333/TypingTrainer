@@ -1,0 +1,25 @@
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char haystack[] = "C is hard. C is fast. I love C.";
+    char needle[] = "C";
+    int count = 0;
+    
+    char *ptr = haystack;
+
+    /* strstr(haystack, needle)
+     * Sucht das erste Vorkommen des Strings 'needle' im String 'haystack'.
+     * Return: Ein Pointer auf den Beginn des gefundenen Substrings, oder NULL. */
+    while ((ptr = strstr(ptr, needle)) != NULL) {
+        count++;
+        
+        /* Zeigerarithmetik: 
+         * Wir setzen den Suchzeiger um die Länge des gefundenen Wortes nach vorne, 
+         * damit wir im nächsten Schleifendurchlauf nicht dasselbe Wort nochmal finden. */
+        ptr += strlen(needle); 
+    }
+
+    printf("Gefunden: %d mal\n", count);
+    return 0;
+}

@@ -1,3 +1,6 @@
 [
-  "example.txt"
+  "c_file_io_malloc.txt",
+  "c_pointer_arith.txt",
+  "c_string_parsing.txt",
+  "c_user_input_buffer_cleansing.txt"
 ]

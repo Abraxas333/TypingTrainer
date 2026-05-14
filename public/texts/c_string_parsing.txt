@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char line[] = "Score: Max, 95\n";
+    
+    /* strncmp(str1, str2, n)
+     * Vergleicht maximal die ersten n Zeichen von zwei Strings.
+     * Return: 0 wenn identisch. (Achtung: 0 bedeutet Wahr in diesem Kontext!) */
+    if (strncmp(line, "Score:", 6) == 0) {
+        
+        char name[20];
+        int points;
+        
+        /* sscanf(string, format, variables...)
+         * Wie scanf, liest aber aus einem String statt von der Konsole.
+         * Sehr mächtig für Pattern-Matching.
+         * Return: Anzahl der erfolgreich zugewiesenen Variablen. */
+        if (sscanf(line, "Score: %19[^,], %d", name, &points) == 2) {
+            printf("Geparst: Name=%s, Punkte=%d\n", name, points);
+        }
+    }
+
+    /* strcmp(str1, str2)
+     * Vergleicht zwei komplette Strings exakt. */
+    if (strcmp(name, "Max") == 0) {
+        printf("Das ist Max!\n");
+    }
+
+    return 0;
+}
