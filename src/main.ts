@@ -27,7 +27,7 @@ let input = "";
 let errors = 0;
 let startTime: number | null = null;
 let currentFile = "";
-let everWrong: boolean[] = []; // Speichert alle Indizes, die jemals falsch getippt wurden
+let everWrong: boolean[] = [];
 
 // ---------------- LOAD FILES ----------------
 async function loadFiles() {
@@ -46,6 +46,12 @@ async function loadFile(name: string) {
   currentFile = name;
   const res = await fetch(`/texts/${name}`);
   targetText = (await res.text()).replace(/\r\n/g, "\n");
+  
+  // FIX 1: Höhe des Terminals an den Text anpassen (+ 15 Zeilen Platz für die Stats am Ende)
+  // Das verhindert das interne Scrollen von xterm.js komplett!
+  const lineCount = targetText.split("\n").length;
+  term.resize(term.cols || 120, lineCount + 15);
+  
   reset();
 }
 
@@ -54,16 +60,15 @@ function reset() {
   input = "";
   errors = 0;
   startTime = null;
-  everWrong = []; // Fehler-Historie für neuen Text zurücksetzen
+  everWrong = [];
   render();
 }
 
 // ---------------- RENDER (TrueColor ANSI & Custom Cursor) ----------------
 function render() {
-  term.clear();
-  term.write("\x1b[H");
-
-  let output = "";
+  // FIX 2: term.clear() ENTFERNT, da es das Terminal zum Scrollen/Springen zwingt.
+  // Wir bewegen stattdessen nur den Cursor nach oben links (0,0) und überschreiben den Text.
+  let output = "\x1b[H";
 
   for (let i = 0; i < targetText.length; i++) {
     const expectedChar = targetText[i];
@@ -76,10 +81,9 @@ function render() {
 
     // 1. Cursor Position
     if (isCursor) {
-      // Blasses Grün (#ccffcc) als Hintergrund, dunkles Schwarz (#0b0f0c) als Text
-      prefix = "\x1b[48;2;204;255;204m\x1b[38;2;11;15;12m";
+      prefix = "\x1b[48;2;204;255;204m\x1b[38;2;11;15;12m"; // Blasses Grün Hintergrund
       if (expectedChar === "\n") {
-        displayChar = " \r\n"; // Block anzeigen, bevor umgebrochen wird
+        displayChar = " \r\n";
       }
     }
     // 2. Bereits getippter Text
@@ -89,28 +93,45 @@ function render() {
         prefix = "\x1b[38;2;102;102;102m";
         if (expectedChar === "\n") displayChar = "\r\n";
       } else if (typedChar === expectedChar) {
-        // Richtig getippt
+        // RICHTIG getippt
         if (everWrong[i]) {
-          // Wurde vorher falsch getippt -> Goldgelb (#ffff33)
-          prefix = "\x1b[38;2;255;255;51m";
+          prefix = "\x1b[38;2;255;255;51m"; // Goldgelb, wenn es korrigiert wurde!
         } else {
-          // Direkt richtig -> Grün (#00FF66)
-          prefix = "\x1b[38;2;0;255;102m";
+          prefix = "\x1b[38;2;0;255;102m"; // Grün, wenn es direkt richtig war
         }
         if (expectedChar === "\n") displayChar = "\r\n";
       } else {
-        // Falsch getippt -> Rot (#ff3333)
+        // FALSCH getippt
         if (expectedChar === "\n") {
-          prefix = "\x1b[48;2;255;51;51m"; // Roter Block für falschen Umbruch
-          displayChar = " \r\n";
+          prefix = "\x1b[48;2;255;51;51m\x1b[38;2;255;255;255m";
+          displayChar = typedChar === "\n" ? " " : typedChar;
+          displayChar += "\x1b[0m\r\n";
         } else {
+          // Normales Zeichen erwartet
           prefix = "\x1b[38;2;255;51;51m"; // Roter Text
+          if (typedChar === "\n") {
+            prefix = "\x1b[48;2;255;51;51m"; // Roter Hintergrund für falsches Enter
+            
+            // FIX 3: HIER IST DER GRUND FÜR DEIN ZERSCHOSSENES LAYOUT!
+            // Hier stand vorher " \r\n". Das hat einen echten Zeilenumbruch erzeugt, wo keiner hingehört.
+            displayChar = " "; 
+            
+          } else if (typedChar === " ") {
+            prefix = "\x1b[48;2;255;51;51m"; // Roter Hintergrund für falsches Space
+            displayChar = " ";
+          } else {
+            // DAS TATSÄCHLICH GETIPPTE ZEICHEN ANZEIGEN!
+            displayChar = typedChar;
+          }
         }
       }
     }
 
     output += prefix + displayChar + suffix;
   }
+
+  // FIX 4: "\x1b[J" löscht nach dem Schreiben alle "Geisterzeichen" vom Rest des Bildschirms.
+  output += "\x1b[J";
 
   term.write(output);
   updateStats();
@@ -150,21 +171,20 @@ window.addEventListener(
   (e) => {
     if (!targetText) return;
 
+    if (input.length === targetText.length && input === targetText) return;
+
     if (!startTime) {
       startTime = Date.now();
     }
 
-    // System-Shortcuts ignorieren
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-
     if (
       e.key.length > 1 &&
       e.key !== "Backspace" &&
       e.key !== "Enter" &&
       e.key !== "Tab"
-    ) {
+    )
       return;
-    }
 
     if (e.key === " " || e.key === "Backspace" || e.key === "Tab") {
       e.preventDefault();
@@ -173,7 +193,6 @@ window.addEventListener(
     if (e.key === "Backspace") {
       input = input.slice(0, -1);
     } else if (e.key === "Tab") {
-      // SMART TAB: Wenn das nächste Zeichen ein Leerzeichen ist, fülle bis zu 4 Spaces auf einmal auf!
       if (targetText[input.length] === " ") {
         let spacesAdded = 0;
         while (targetText[input.length] === " " && spacesAdded < 4) {
@@ -182,7 +201,6 @@ window.addEventListener(
         }
         playKeySound(true);
       } else {
-        // Tab gedrückt, obwohl kein Leerzeichen erwartet wird -> Fehler!
         const currentIndex = input.length;
         input += "\t";
         errors++;
@@ -194,12 +212,14 @@ window.addEventListener(
       const key = e.key === "Enter" ? "\n" : e.key;
       const currentIndex = input.length;
 
+      const expectedChar = targetText[currentIndex];
+
       input += key;
 
-      if (input[currentIndex] !== targetText[currentIndex]) {
+      if (input[currentIndex] !== expectedChar) {
         errors++;
         everWrong[currentIndex] = true;
-        trackError(key);
+        trackError(expectedChar);
         playKeySound(false);
       } else {
         playKeySound(true);
@@ -208,9 +228,42 @@ window.addEventListener(
 
     render();
 
+    // WENN FERTIG: STATS DIREKT IM TERMINAL DRUCKEN
     if (input === targetText) {
-      term.write("\r\n\r\n\x1b[38;2;0;255;102m✔ Finished\x1b[0m\r\n");
-      console.log("Error heatmap:", errorMap);
+      const minutes = (Date.now() - startTime) / 60000;
+      const wpm = Math.round(targetText.length / 5 / minutes) || 0;
+      const acc =
+        Math.round(((targetText.length - errors) / targetText.length) * 100) ||
+        100;
+
+      const sortedErrors = Object.entries(errorMap).sort((a, b) => b[1] - a[1]);
+      let errorOutput = "";
+
+      if (sortedErrors.length === 0) {
+        errorOutput = "  \x1b[38;2;0;255;102mPerfekt! Keine Fehler.\x1b[0m\r\n";
+      } else {
+        for (const [char, count] of sortedErrors) {
+          const displayChar =
+            char === "\n"
+              ? "Enter"
+              : char === " "
+                ? "Space"
+                : char === "\t"
+                  ? "Tab"
+                  : char;
+          errorOutput += `  \x1b[38;2;255;51;51m${displayChar}\x1b[0m: ${count}x\r\n`;
+        }
+      }
+
+      term.write(`\r\n\r\n\x1b[38;2;0;255;102m✔ Finished!\x1b[0m\r\n`);
+      term.write(`\x1b[38;2;102;153;255m📊 Stats:\x1b[0m\r\n`);
+      term.write(`  WPM: \x1b[38;2;255;255;255m${wpm}\x1b[0m\r\n`);
+      term.write(`  ACC: \x1b[38;2;255;255;255m${acc}%\x1b[0m\r\n`);
+      term.write(`  Errors: \x1b[38;2;255;51;51m${errors}\x1b[0m\r\n\r\n`);
+      term.write(
+        `\x1b[38;2;255;255;51m🔥 Error Heatmap (Am häufigsten verfehlt):\x1b[0m\r\n`,
+      );
+      term.write(errorOutput);
     }
   },
   true,
