@@ -2,5 +2,13 @@
   "c_file_io_malloc.txt",
   "c_pointer_arith.txt",
   "c_string_parsing.txt",
-  "c_user_input_buffer_cleansing.txt"
+  "c_user_input_buffer_cleansing.txt",
+  "ISP_Memory_Management_Snippets.txt",
+  "c_fgets.txt",
+  "c_sscanf.txt",
+  "c_strchr.txt",
+  "c_strcmp.txt",
+  "c_strcspn.txt",
+  "c_strlen.txt",
+  "c_strncmp.txt"
 ]

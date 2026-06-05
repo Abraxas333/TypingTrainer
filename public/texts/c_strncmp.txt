@@ -1,0 +1,53 @@
+The C library strncmp() function is used to compare at most a specified number of characters from two null-terminated strings. This string is also known as end of the string i.e. defined through the occurrence of a null character.
+Syntax
+
+Following is the syntax of the C library strncmp() function −
+
+strncmp(const char *str1, const char *str2, size_t n)
+
+Parameters
+
+This function accepts the following parameters −
+
+    str1 − This is the first string to be compared.
+
+    str2 − This is the second string to be compared.
+
+    n − This parameter refer to maximum number of characters to be compared.
+
+Return Value
+
+This function returns integer value which is −
+
+    Negative, if the str1 is less than str2.
+
+    Positive, if the str2 is less than str1.
+
+    zero, if the str1 is equal to str2.
+
+Example 1
+
+Following is the C library strncmp() function that checks whether the given two strings are equal or not.
+
+#include <stdio.h> 
+#include <string.h>  
+int main() 
+{  
+   char str_1[] = "java";  
+   char str_2[] = "java";      
+   if (strncmp(str_1, str_2, strlen(str_2)) == 0) 
+   {  
+      printf("The strings '%s' and '%s' are equal.\n", str_1, str_2);  
+   }  
+   else 
+   {  
+      printf("The strings '%s' and '%s' are not equal.\n", str_1, str_2);  
+   }  
+   return 0;  
+}  
+
+Output
+
+On execution of above code, we get the following result −
+
+The strings 'java' and 'java' are equal.

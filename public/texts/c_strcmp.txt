@@ -1,0 +1,29 @@
+In C, strcmp() is a built-in library function used to compare two strings lexicographically. It takes two strings (array of characters) as arguments, compares these two strings lexicographically, and then returns some value as a result.
+
+The strcmp function in C is used to compare two strings, with syntax: int strcmp(const char *str1, const char *str2);, where str1 and str2 are the strings to compare.
+It returns 0 if the strings are equal, a negative value if str1 is less than str2, and a positive value if str1 is greater than str2.
+
+#include <stdio.h>
+#include <string.h>
+
+​
+int main(){
+
+    char* s1 = "Geeks";
+
+    char* s2 = "Geeks";
+
+​
+
+    // Printing the return value of the strcmp()
+
+    printf("%d", strcmp(s1, s2));
+
+​
+
+    return 0;
+
+}
+
+
+Output: 0

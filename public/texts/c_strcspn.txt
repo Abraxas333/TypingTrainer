@@ -1,0 +1,64 @@
+The strcspn() is a part of the C standard library, it is defined in the <string.h> header file in C. The strcsspn function is used to find the number of characters in the given string before the 1st occurrence of a character from the defined set of characters or string.
+Syntax of strcspn()
+
+strcspn(const char *str1, const char *str2)
+
+where,
+
+    str1 : The Target string in which search has to be made.
+    str2 : Argument string containing characters to match in target string.
+
+Return Value
+
+This function returns the number of characters in the first string before the 1st occurrence
+of character present in second string.
+Examples of strcspn()
+
+These C programs demonstrate the use of strcspn() for various scenarios.
+Using strcspn() to find characters before matching Character
+
+#include <stdio.h>
+
+#include <string.h>
+
+​
+
+int main()
+
+{
+
+​
+
+    int size;
+
+​
+
+    // initializing strings
+
+    char str1[] = "geeksforgeeks";
+
+    char str2[] = "kfc";
+
+​
+
+    // using strcspn() to calculate initial chars
+
+    // before 1st matching chars.
+
+    size = strcspn(str1, str2);
+
+    printf("str1: %s\n",str1);
+
+    printf("str2: %s\n",str2);
+
+    printf("The number of characters in str1 before \nfirst matched character from str2: %d\n", size);
+
+}
+
+
+Output
+
+str1: geeksforgeeks
+str2: kfc
+The number of characters in str1 before 
+first matched character from str2: 3

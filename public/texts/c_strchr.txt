@@ -1,0 +1,79 @@
+strchr in C
+Last Updated : 23 Jul, 2025
+
+The strchr() function in C is a predefined function in the <string.h> library. It is used to find the first occurrence of a character in a string. It checks whether the given character is present in the given string. If the character is found, it returns the pointer to its first occurrence otherwise, it returns a null pointer, indicating the character is not found in the string.
+Syntax of strchr() in C
+
+char *strchr(const char *str, int ch);
+
+Parameters of strchr() in C
+
+    str: It is the string in which we have to search the character. This string is a constant character pointer, meaning that the function will not modify the string.
+    ch: It is a character to be searched in the string. Though passed as an int, it represents a character and is cast internally. This allows strchr() to be used with character values, including special characters and ASCII values.
+
+Return Value of strchr() 
+
+The strchr() function returns a pointer to the first occurrence of the character in the string. If the character is not found, the function returns NULL. Here, the return type is char *, which allows direct access to the character and subsequent characters in the string from the found position.
+Example Programs Using strchr() in C
+
+The following examples illustrates how we can use strchr() in various scenarios.
+Example 1:
+
+Using strchr() to check the existence of character in a string and print its first occurrence.
+
+#include <stdio.h>
+
+#include <string.h>
+
+​
+
+int main()
+
+{
+
+    // define a string
+
+    const char* str = "GeeksforGeeks";
+
+    // define a char ch to be searched in str
+
+    char ch = 's';
+
+​
+
+    // Use strchr to find the first occurrence of the
+
+    // character 's'
+
+    const char* result = strchr(str, ch);
+
+​
+
+    if (result != NULL) {
+
+        // Calculate the position by subtracting the base
+
+        // pointer from the result pointer
+
+        printf("Character '%c' found at position: %ld\n",
+
+               ch, result - str);
+
+    }
+
+    else {
+
+        printf("Character '%c' not found.\n", ch);
+
+    }
+
+​
+
+    return 0;
+
+}
+
+
+Output
+
+Character 's' found at position: 4

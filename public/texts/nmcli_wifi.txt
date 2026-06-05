@@ -1,0 +1,21 @@
+Run nmcli specifying the device and SSID:
+
+    Scan for networks:
+
+nmcli device wifi list ifname wlan1
+
+    Connect (WPA/WPA2):
+
+nmcli device wifi connect "SSID" password "your_password" ifname wlan1
+
+    If the network is open:
+
+nmcli device wifi connect "SSID" ifname wlan1
+
+    To create a persistent connection profile and bring it up:
+
+nmcli connection add type wifi ifname wlan1 con-name my-wlan1 ssid "SSID"nmcli connection modify my-wlan1 wifi-sec.key-mgmt wpa-psknmcli connection modify my-wlan1 wifi-sec.psk "your_password"nmcli connection up my-wlan1
+
+    Check status:
+
+nmcli device statusnmcli connection show --active
